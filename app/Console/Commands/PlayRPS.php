@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Game;
+use App\Http\Controllers\GameController;
 use Illuminate\Console\Command;
 
 class PlayRPS extends Command
@@ -18,7 +20,7 @@ class PlayRPS extends Command
      *
      * @var string
      */
-    protected $description = 'Execute this command to start the game of rock, paper, scissors';
+    protected $description = 'Execute this command to start the rock, paper, scissors game (rps) or rock, paper, scissors, wizard, spock (rpsws)';
 
     /**
      * Create a new command instance.
@@ -37,6 +39,12 @@ class PlayRPS extends Command
      */
     public function handle()
     {
-        //
+        $element = new Game('rps');
+        $name = $element->getName();
+        $strongVS = $element->getStrongVS();
+        $rules = $element->getJson();
+
+        $result = new GameController($rules,$name);
+        dd($name, $strongVS, $result->determineResult());
     }
 }
