@@ -1,14 +1,14 @@
 {
     "Rock": {
-        "strongVS": "Scissors",
-        "weakVS": "Paper"
+        "strongVS": ["Scissors"],
+        "weakVS": ["Paper"]
     },
     "Paper": {
-        "strongVS": "Rock",
-        "weakVS": "Scissors"
+        "strongVS": ["Rock"],
+        "weakVS": ["Scissors"]
     },
     "Scissors": {
-        "strongVS": "Paper",
-        "weakVS": "Rock"
+        "strongVS": ["Paper"],
+        "weakVS": ["Rock"]
     }
 }

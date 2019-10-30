@@ -20,7 +20,7 @@ class PlayRPS extends Command
      *
      * @var string
      */
-    protected $description = 'Execute this command to start the rock, paper, scissors game (rps) or rock, paper, scissors, wizard, spock (rpsws)';
+    protected $description = 'Execute this command to start the rock, paper, scissors game (rps) or rock, paper, scissors, lizard, spock (rpsls)';
 
     /**
      * Create a new command instance.
@@ -35,16 +35,40 @@ class PlayRPS extends Command
     /**
      * Execute the console command.
      *
+     * @param GameController $gameController
      * @return mixed
      */
-    public function handle()
+    public function handle(GameController $gameController): void
     {
-        $element = new Game('rps');
-        $name = $element->getName();
-        $strongVS = $element->getStrongVS();
-        $rules = $element->getJson();
+        $win = 0;
+        $draw = 0;
+        $lose = 0;
 
-        $result = new GameController($rules,$name);
-        dd($name, $strongVS, $result->determineResult());
+        for ($i=0;$i<100;$i++)
+        {
+            $game = new Game('rpsls');
+            $name = $game->getName();
+            $rules = $game->getJson();
+            $result = $gameController->determineResult($rules,$name);
+
+            switch ($result) {
+                case 'win':
+                    $win++;
+                    break;
+                case 'draw':
+                    $draw++;
+                    break;
+                case 'lose':
+                    $lose++;
+                    break;
+            }
+            unset($game,$name,$match,$result);
+        }
+
+        $results = $gameController->createResultsArray($win,$draw,$lose);
+
+        $gameController->createCSV($results);
+
+        $this->table(['Total', 'Win', 'Draw', 'Lose'],[$results]);
     }
 }
