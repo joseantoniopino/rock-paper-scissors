@@ -20,7 +20,7 @@ class PlayRPS extends Command
      *
      * @var string
      */
-    protected $description = 'Execute this command to start the rock, paper, scissors game (rps) or rock, paper, scissors, lizard, spock (rpsls)';
+    protected $description = 'Execute this command to start playing games like rock, paper, scissors.';
 
     /**
      * Create a new command instance.
@@ -40,35 +40,55 @@ class PlayRPS extends Command
      */
     public function handle(GameController $gameController): void
     {
-        $win = 0;
-        $draw = 0;
-        $lose = 0;
+        $gamesAvailable = $gameController->listAvailableGames();
+        $gameName = $this->choice('Which game do you want to play?',$gamesAvailable,$gamesAvailable[1]);
+        $game = new Game($gameName);
+        $info = $game->getJson()["Info"];
+        $continue = $this->confirm($info . ' Do you wish to continue?');
 
-        for ($i=0;$i<100;$i++)
-        {
-            $game = new Game('rpsls');
-            $name = $game->getName();
-            $rules = $game->getJson();
-            $result = $gameController->determineResult($rules,$name);
+        if ($continue){
+            $win = 0;
+            $draw = 0;
+            $lose = 0;
 
-            switch ($result) {
-                case 'win':
-                    $win++;
-                    break;
-                case 'draw':
-                    $draw++;
-                    break;
-                case 'lose':
-                    $lose++;
-                    break;
+            $rules = $game->getJson()["Rules"];
+
+            for ($i=0;$i<100;$i++)
+            {
+                $randomElement = $game->randomizeElement();
+                $game->setElement($randomElement);
+                $element = $game->getElement();
+                $result = $gameController->determineResult($rules,$element);
+                switch ($result) {
+                    case 'win':
+                        $win++;
+                        break;
+                    case 'draw':
+                        $draw++;
+                        break;
+                    case 'lose':
+                        $lose++;
+                        break;
+                }
+                unset($randomElement,$element,$result);
             }
-            unset($game,$name,$match,$result);
+
+            if ($win > $lose){
+                $message = 'You are the champion!';
+            } elseif ($lose > $win){
+                $message = 'You are a looser :P';
+            } else {
+                $message = 'Draw!';
+            }
+
+            $results = $gameController->createResultsArray($win,$draw,$lose);
+
+            $gameController->createCSV($results);
+
+            $this->table(['Total', 'Win', 'Draw', 'Lose'],[$results]);
+            $this->line($message);
+        } else {
+            $this->warn('Exit!');
         }
-
-        $results = $gameController->createResultsArray($win,$draw,$lose);
-
-        $gameController->createCSV($results);
-
-        $this->table(['Total', 'Win', 'Draw', 'Lose'],[$results]);
     }
 }

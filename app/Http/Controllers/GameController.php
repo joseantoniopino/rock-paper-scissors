@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use DateTime;
+use DirectoryIterator;
 use Exception;
 use Illuminate\Support\Facades\Storage;
 use SoapBox\Formatter\Formatter;
@@ -10,8 +11,9 @@ use SoapBox\Formatter\Formatter;
 class GameController extends Controller
 {
     private $resultPlayerTwo;
-    private $folderName;
+    private $outputDirectoryName;
     private $outputFilename;
+    private $pathToGames;
 
     /**
      * GameController constructor.
@@ -21,8 +23,9 @@ class GameController extends Controller
     {
         $today = new DateTime();
         $this->outputFilename = 'game_' . $today->format('Ymd') . '.csv';
-        $this->folderName = 'game_reports';
+        $this->outputDirectoryName = 'game_reports';
         $this->resultPlayerTwo = 'Rock';
+        $this->pathToGames = storage_path() . '/games';
     }
 
     /**
@@ -64,12 +67,26 @@ class GameController extends Controller
 
     private function saveFile($file)
     {
-        $folderExists = Storage::disk('local')->exists($this->folderName);
-        $path = $this->folderName . '/' . $this->outputFilename;
+        $folderExists = Storage::disk('local')->exists($this->outputDirectoryName);
+        $path = $this->outputDirectoryName . '/' . $this->outputFilename;
 
         if (!$folderExists)
-            Storage::makeDirectory($this->folderName);
+            Storage::makeDirectory($this->outputDirectoryName);
 
         Storage::disk('local')->put($path, $file);
+    }
+
+    public function listAvailableGames()
+    {
+        $gamesAvailable = [];
+        $dir = new DirectoryIterator($this->pathToGames);
+        foreach ($dir as $file)
+        {
+            if ((!$file->isDot()) && ($file->getExtension() === 'json')) {
+                $game = str_replace('.json','',$file->getFilename());
+                $gamesAvailable[] = $game;
+            }
+        }
+        return $gamesAvailable;
     }
 }

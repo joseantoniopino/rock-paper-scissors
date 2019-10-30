@@ -4,9 +4,10 @@ namespace App;
 
 class Game
 {
-    private $name;
+    private $element;
     private $strongVS;
     private $weakVS;
+    private $info;
     private $pathToJson;
     private $json;
 
@@ -17,12 +18,12 @@ class Game
      */
     public function __construct($game)
     {
-        $this->pathToJson = storage_path() . '/' . $game . '.json';
+        $this->pathToJson = storage_path() . '/games/' . strtolower($game) . '.json';
         $this->json = json_decode(file_get_contents($this->pathToJson),true);
-        $this->name = array_rand($this->json,1);
-        $this->strongVS = $this->json[$this->name]['strongVS'];
-        $this->weakVS = $this->json[$this->name]['weakVS'];
-
+        $this->element = $this->randomizeElement();
+        $this->strongVS = $this->json["Rules"][$this->element]['strongVS'];
+        $this->weakVS = $this->json["Rules"][$this->element]['weakVS'];
+        $this->info = $this->json['Info'];
     }
 
 
@@ -30,17 +31,19 @@ class Game
     /**
      * @return mixed
      */
-    public function getName()
+    public function getElement()
     {
-        return $this->name;
+        return $this->element;
     }
 
     /**
-     * @param mixed $name
+     * @param mixed $element
+     * @return mixed
      */
-    public function setName($name): void
+    public function setElement($element)
     {
-        $this->name = $name;
+        $this->element = $element;
+        return $element;
     }
 
     /**
@@ -89,5 +92,14 @@ class Game
     public function setJson($json): void
     {
         $this->json = $json;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function randomizeElement()
+    {
+        $element = array_rand($this->json["Rules"],1);
+        return $element;
     }
 }
