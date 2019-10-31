@@ -2,17 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use DateTime;
+use App\Game;
 use DirectoryIterator;
 use Exception;
-use Illuminate\Support\Facades\Storage;
-use SoapBox\Formatter\Formatter;
 
 class GameController extends Controller
 {
     private $resultPlayerTwo;
-    private $outputDirectoryName;
-    private $outputFilename;
     private $pathToGames;
 
     /**
@@ -21,9 +17,6 @@ class GameController extends Controller
      */
     public function __construct()
     {
-        $today = new DateTime();
-        $this->outputFilename = 'game_' . $today->format('Ymd') . '.csv';
-        $this->outputDirectoryName = 'game_reports';
         $this->resultPlayerTwo = 'Rock';
         $this->pathToGames = storage_path() . '/games';
     }
@@ -33,7 +26,7 @@ class GameController extends Controller
      * @param $resultPlayerOne
      * @return string
      */
-    public function determineResult($rules,$resultPlayerOne)
+    public function determineResult($rules,$resultPlayerOne): string
     {
         $strongVS = $rules[$resultPlayerOne]['strongVS'];
 
@@ -47,7 +40,13 @@ class GameController extends Controller
         return $roll;
     }
 
-    public function createResultsArray($win,$draw,$lose)
+    /**
+     * @param $win
+     * @param $draw
+     * @param $lose
+     * @return array
+     */
+    public function createResultsArray($win, $draw, $lose): array
     {
         $results = [];
         $results['total'] = $win + $draw + $lose;
@@ -58,25 +57,10 @@ class GameController extends Controller
         return $results;
     }
 
-    public function createCSV($results)
-    {
-        $formatter = Formatter::make($results, Formatter::ARR);
-        $file = $formatter->toCsv("\r\n", ',');
-        $this->saveFile($file);
-    }
-
-    private function saveFile($file)
-    {
-        $folderExists = Storage::disk('local')->exists($this->outputDirectoryName);
-        $path = $this->outputDirectoryName . '/' . $this->outputFilename;
-
-        if (!$folderExists)
-            Storage::makeDirectory($this->outputDirectoryName);
-
-        Storage::disk('local')->put($path, $file);
-    }
-
-    public function listAvailableGames()
+    /**
+     * @return array
+     */
+    public function listAvailableGames(): array
     {
         $gamesAvailable = [];
         $dir = new DirectoryIterator($this->pathToGames);
@@ -88,5 +72,51 @@ class GameController extends Controller
             }
         }
         return $gamesAvailable;
+    }
+
+    /**
+     * @param Game $game
+     * @return array
+     */
+    public function play(Game $game): array
+    {
+        $win = 0;
+        $draw = 0;
+        $lose = 0;
+        $results = [];
+        $rules = $game->getJson()["Rules"];
+
+        for ($i=0;$i<100;$i++)
+        {
+            $randomElement = $game->randomizeElement();
+            $game->setElement($randomElement);
+            $element = $game->getElement();
+            $result = $this->determineResult($rules,$element);
+            switch ($result) {
+                case 'win':
+                    $win++;
+                    break;
+                case 'draw':
+                    $draw++;
+                    break;
+                case 'lose':
+                    $lose++;
+                    break;
+            }
+            unset($randomElement,$element,$result);
+        }
+        $results['win'] = $win;
+        $results['draw'] = $draw;
+        $results['loose'] = $lose;
+
+        return $results;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPathToGames(): string
+    {
+        return $this->pathToGames;
     }
 }

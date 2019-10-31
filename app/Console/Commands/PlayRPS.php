@@ -2,9 +2,13 @@
 
 namespace App\Console\Commands;
 
+use App\Exceptions\NoGamesFoundException;
 use App\Game;
 use App\Http\Controllers\GameController;
+use DateTime;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Storage;
+use SoapBox\Formatter\Formatter;
 
 class PlayRPS extends Command
 {
@@ -27,8 +31,15 @@ class PlayRPS extends Command
      *
      * @return void
      */
+
+    private $outputDirectoryName;
+    private $outputFilename;
+
     public function __construct()
     {
+        $today = new DateTime();
+        $this->outputFilename = 'game_' . $today->format('Ymd') . '.csv';
+        $this->outputDirectoryName = 'game_reports';
         parent::__construct();
     }
 
@@ -37,58 +48,80 @@ class PlayRPS extends Command
      *
      * @param GameController $gameController
      * @return mixed
+     * @throws NoGamesFoundException
      */
     public function handle(GameController $gameController): void
     {
         $gamesAvailable = $gameController->listAvailableGames();
-        $gameName = $this->choice('Which game do you want to play?',$gamesAvailable,$gamesAvailable[1]);
-        $game = new Game($gameName);
-        $info = $game->getJson()["Info"];
-        $continue = $this->confirm($info . ' Do you wish to continue?');
 
-        if ($continue){
-            $win = 0;
-            $draw = 0;
-            $lose = 0;
+        if (count($gamesAvailable) == 0)
+            throw new NoGamesFoundException($gameController->getPathToGames());
 
-            $rules = $game->getJson()["Rules"];
-
-            for ($i=0;$i<100;$i++)
-            {
-                $randomElement = $game->randomizeElement();
-                $game->setElement($randomElement);
-                $element = $game->getElement();
-                $result = $gameController->determineResult($rules,$element);
-                switch ($result) {
-                    case 'win':
-                        $win++;
-                        break;
-                    case 'draw':
-                        $draw++;
-                        break;
-                    case 'lose':
-                        $lose++;
-                        break;
-                }
-                unset($randomElement,$element,$result);
-            }
-
-            if ($win > $lose){
-                $message = 'You are the champion!';
-            } elseif ($lose > $win){
-                $message = 'You are a looser :P';
-            } else {
-                $message = 'Draw!';
-            }
-
-            $results = $gameController->createResultsArray($win,$draw,$lose);
-
-            $gameController->createCSV($results);
-
-            $this->table(['Total', 'Win', 'Draw', 'Lose'],[$results]);
-            $this->line($message);
-        } else {
-            $this->warn('Exit!');
+        $game = null;
+        $gameName = '';
+        $continue = false;
+        while (!$continue){
+            $gameName = $this->choice('Which game do you want to play?',$gamesAvailable,$gamesAvailable[1]);
+            $game = new Game($gameName);
+            $info = $game->getJson()["Info"];
+            $continue = $this->confirm($info . ' Do you wish to continue?');
         }
+        $this->output->section('Let\'s play to ' . $gameName);
+
+        $rolls = $gameController->play($game);
+
+        $results = $gameController->createResultsArray($rolls['win'],$rolls['draw'],$rolls['loose']);
+
+        $this->createCSV($results);
+
+        $this->table(['Total', 'Win', 'Draw', 'Lose'],[$results]);
+
+        $message = $this->determineOutputMessage($rolls['win'], $rolls['loose']);
+
+        $this->output->section($message);
+    }
+
+    /**
+     * @param $win
+     * @param $lose
+     * @return string
+     */
+    private function determineOutputMessage($win, $lose): string
+    {
+        if ($win > $lose){
+            $message = 'You are the champion!';
+        } elseif ($lose > $win){
+            $message = 'You are a looser :P';
+        } else {
+            $message = 'Draw!';
+        }
+
+        return $message;
+    }
+
+    /**
+     * @param $results
+     * @return void
+     */
+    private function createCSV($results): void
+    {
+        $formatter = Formatter::make($results, Formatter::ARR);
+        $file = $formatter->toCsv("\r\n", ',');
+        $this->saveFile($file);
+    }
+
+    /**
+     * @param $file
+     * @return void
+     */
+    private function saveFile($file): void
+    {
+        $folderExists = Storage::disk('local')->exists($this->outputDirectoryName);
+        $path = $this->outputDirectoryName . '/' . $this->outputFilename;
+
+        if (!$folderExists)
+            Storage::makeDirectory($this->outputDirectoryName);
+
+        Storage::disk('local')->put($path, $file);
     }
 }

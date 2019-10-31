@@ -38,12 +38,10 @@ class Game
 
     /**
      * @param mixed $element
-     * @return mixed
      */
     public function setElement($element)
     {
         $this->element = $element;
-        return $element;
     }
 
     /**
