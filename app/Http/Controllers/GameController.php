@@ -41,23 +41,6 @@ class GameController extends Controller
     }
 
     /**
-     * @param $win
-     * @param $draw
-     * @param $lose
-     * @return array
-     */
-    public function createResultsArray($win, $draw, $lose): array
-    {
-        $results = [];
-        $results['total'] = $win + $draw + $lose;
-        $results['win'] = $win;
-        $results['draw'] = $draw;
-        $results['lose'] = $lose;
-
-        return $results;
-    }
-
-    /**
      * @return array
      */
     public function listAvailableGames(): array
@@ -105,6 +88,7 @@ class GameController extends Controller
             }
             unset($randomElement,$element,$result);
         }
+        $results['total'] = $win + $draw + $lose;
         $results['win'] = $win;
         $results['draw'] = $draw;
         $results['lose'] = $lose;

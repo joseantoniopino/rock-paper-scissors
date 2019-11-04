@@ -6,8 +6,6 @@ use App\Game;
 use App\Http\Controllers\GameController;
 use DirectoryIterator;
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class GameControllerTest extends TestCase
 {
@@ -84,26 +82,6 @@ class GameControllerTest extends TestCase
             $roll = 'lose';
         }
         $this->assertEquals($roll, 'lose');
-    }
-
-    public function test_create_results_array()
-    {
-        $results = [];
-        $results['total'] = $this->total;
-        $results['win'] = $this->win;
-        $results['draw'] = $this->draw;
-        $results['lose'] = $this->lose;
-
-        $this->assertIsArray($results);
-        $this->assertCount(4,$results);
-        $this->assertEquals($results['win'],$this->win);
-        $this->assertEquals($results['draw'],$this->draw);
-        $this->assertEquals($results['lose'],$this->lose);
-        $this->assertEquals($results['total'],$this->total);
-        $this->assertArrayHasKey('win',$results);
-        $this->assertArrayHasKey('draw',$results);
-        $this->assertArrayHasKey('lose',$results);
-        $this->assertArrayHasKey('total',$results);
     }
 
     public function test_list_available_games()
