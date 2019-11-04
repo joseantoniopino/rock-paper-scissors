@@ -100,4 +100,12 @@ class Game
         $element = array_rand($this->json["Rules"],1);
         return $element;
     }
+
+    /**
+     * @return string
+     */
+    public function getPathToJson(): string
+    {
+        return $this->pathToJson;
+    }
 }

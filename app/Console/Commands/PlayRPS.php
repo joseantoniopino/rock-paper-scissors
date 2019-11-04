@@ -70,13 +70,13 @@ class PlayRPS extends Command
 
         $rolls = $gameController->play($game);
 
-        $results = $gameController->createResultsArray($rolls['win'],$rolls['draw'],$rolls['loose']);
+        $results = $gameController->createResultsArray($rolls['win'],$rolls['draw'],$rolls['lose']);
 
         $this->createCSV($results);
 
         $this->table(['Total', 'Win', 'Draw', 'Lose'],[$results]);
 
-        $message = $this->determineOutputMessage($rolls['win'], $rolls['loose']);
+        $message = $this->determineOutputMessage($rolls['win'], $rolls['lose']);
 
         $this->output->section($message);
     }

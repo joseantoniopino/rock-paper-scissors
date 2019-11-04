@@ -107,7 +107,7 @@ class GameController extends Controller
         }
         $results['win'] = $win;
         $results['draw'] = $draw;
-        $results['loose'] = $lose;
+        $results['lose'] = $lose;
 
         return $results;
     }
