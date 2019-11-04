@@ -311,13 +311,13 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="PHPUnit.GameControllerTest" />
-      <item itemvalue="PHPUnit.GameControllerTest.test_play" />
-      <item itemvalue="PHPUnit.GameTest" />
-      <item itemvalue="PHPUnit.PlayRPSTest" />
-      <item itemvalue="PHPUnit.PlayRPSTest.test_save_file" />
-      <item itemvalue="PHPUnit.phpunit.xml" />
       <item itemvalue="PHP Built-in Web Server.rps" />
+      <item itemvalue="PHPUnit.phpunit.xml" />
+      <item itemvalue="PHPUnit.PlayRPSTest.test_save_file" />
+      <item itemvalue="PHPUnit.PlayRPSTest" />
+      <item itemvalue="PHPUnit.GameControllerTest" />
+      <item itemvalue="PHPUnit.GameTest" />
+      <item itemvalue="PHPUnit.GameControllerTest.test_play" />
     </list>
     <recent_temporary>
       <list>

@@ -1,0 +1,29 @@
+{
+    "Rules": {
+        "Rock": {
+            "strongVS": [
+                "Scissors"
+            ],
+            "weakVS": [
+                "Paper"
+            ]
+        },
+        "Paper": {
+            "strongVS": [
+                "Rock"
+            ],
+            "weakVS": [
+                "Scissors"
+            ]
+        },
+        "Scissors": {
+            "strongVS": [
+                "Paper"
+            ],
+            "weakVS": [
+                "Rock"
+            ]
+        }
+    },
+    "Info": "You have chosen rps. The traditional game of rock, paper, scissors."
+}
